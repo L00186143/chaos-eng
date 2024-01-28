@@ -32,3 +32,11 @@ jobs:
     - name: Get EC2 Instance IP
       id: get_instance_ip
       run: echo "::set-output name=ip::$(terraform output ec2_instance_private_ip)"
+
+    - name: Simulate DDoS Attack
+      run: |
+        # Retrieve the EC2 instance IP from the previous step's output
+        target_ip=$(echo ${{ steps.get_instance_ip.outputs.ip }})
+        
+        # Perform DDoS simulation using hping3
+        hping3 --flood --rand-source $target_ip
