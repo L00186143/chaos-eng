@@ -26,17 +26,20 @@ jobs:
     - name: Terraform Init
       run: terraform init
 
-    - name: Terraform Apply
-      run: terraform apply -auto-approve
+    - name: Terraform Plan
+      run: terraform plan
 
-    - name: Get EC2 Instance IP
-      id: get_instance_ip
-      run: echo "::set-output name=ip::$(terraform output ec2_instance_private_ip)"
+    #- name: Terraform Apply
+    #  run: terraform apply -auto-approve
 
-    - name: Simulate DDoS Attack
-      run: |
-        # Retrieve the EC2 instance IP from the previous step's output
-        target_ip=$(echo ${{ steps.get_instance_ip.outputs.ip }})
+    #- name: Get EC2 Instance IP
+    #  id: get_instance_ip
+    #  run: echo "::set-output name=ip::$(terraform output ec2_instance_private_ip)"
+
+    #- name: Simulate DDoS Attack
+    #  run: |
+    #    # Retrieve the EC2 instance IP from the previous step's output
+    #    target_ip=$(echo ${{ steps.get_instance_ip.outputs.ip }})
         
         # Perform DDoS simulation using hping3
-        hping3 --flood --rand-source $target_ip
+    #    hping3 --flood --rand-source $target_ip
