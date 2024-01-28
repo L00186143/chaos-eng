@@ -27,7 +27,7 @@ resource "aws_instance" "web_instance" {
 
 
 resource "aws_launch_configuration" "web_server_launch_config" {
-  name = "web-server-launch-config"
+  name = "new-web-server-launch-config"
   image_id = aws_instance.web_instance.ami
   instance_type = "t3.micro"
 
