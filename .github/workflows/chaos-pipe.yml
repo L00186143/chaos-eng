@@ -31,4 +31,4 @@ jobs:
 
     - name: Get EC2 Instance IP
       id: get_instance_ip
-      run: echo "::set-output name=ip::$(terraform output ec2_instance_ip)"
+      run: echo "::set-output name=ip::$(terraform output ec2_instance_private_ip)"

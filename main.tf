@@ -49,6 +49,6 @@ resource "aws_autoscaling_group" "web_server_asg" {
   health_check_grace_period  = 300
 }
 
-output "ec2_instance_ip" {
-  value = aws_instance.my_instance.private_ip
+output "ec2_instance_private_ip" {
+  value = aws_instance.web_instance.private_ip
 }
