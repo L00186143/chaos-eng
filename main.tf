@@ -32,7 +32,7 @@ resource "aws_launch_configuration" "web_server_launch_config" {
   instance_type = "t3.micro"
 
   lifecycle {
-    create_before_destroy = true
+    create_before_destroy = false
   }
 }
 
