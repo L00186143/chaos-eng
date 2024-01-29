@@ -43,3 +43,6 @@ jobs:
         
         # Perform DDoS simulation using hping3
     #    hping3 --flood --rand-source $target_ip
+
+    - name: Destroy Infrastructure
+      run: terraform destroy

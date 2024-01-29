@@ -27,7 +27,7 @@ resource "aws_instance" "web_instance" {
 
 
 resource "aws_launch_configuration" "web_server_launch_config" {
-  name = "web-server-launch-config"
+  name = "my-launch-config"
   image_id = aws_instance.web_instance.ami
   instance_type = "t3.micro"
 }
@@ -44,6 +44,17 @@ resource "aws_autoscaling_group" "web_server_asg" {
   health_check_type          = "EC2"
   health_check_grace_period  = 300
 }
+
+
+terraform {
+  backend "s3" {
+    bucket = "tfstate-atu"
+    key    = "terraform.tfstate"
+    region = "eu-north-1"
+    encrypt = true
+  }
+}
+
 
 output "ec2_instance_private_ip" {
   value = aws_instance.web_instance.private_ip
