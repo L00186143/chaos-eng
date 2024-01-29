@@ -45,4 +45,4 @@ jobs:
     #    hping3 --flood --rand-source $target_ip
 
     - name: Destroy Infrastructure
-      run: terraform destroy
+      run: terraform destroy -auto-approve
