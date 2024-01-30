@@ -30,9 +30,7 @@ jobs:
       run: terraform plan
 
     - name: Terraform Apply
-      run: |
-        terraform apply -auto-approve
-        terraform output -raw autoscaling_group_name > output.txt
+      run: terraform apply -auto-approve | tee output.txt
 
     - name: Upload Terraform Output as Artifact
       uses: actions/upload-artifact@v2
