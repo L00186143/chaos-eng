@@ -54,6 +54,9 @@ jobs:
       with:
         name: terraform-output
 
+    - name: Display content of output.txt
+      run: cat output.txt
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
