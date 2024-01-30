@@ -45,12 +45,14 @@ def toggle_security_group_rule(security_group_id, action, ip_protocol, from_port
 def read_terraform_output(file_path, output_key):
     try:
         with open(file_path, 'r') as file:
+            print(f"Reading from {file_path}:")  # Debugging output
             for line in file:
-                # Strip whitespace and split by '='
+                print(line)  # Debugging output: print each line
                 parts = line.strip().split('=')
                 if len(parts) == 2 and parts[0].strip() == output_key:
-                    # Extract value and strip whitespace and quotes
-                    return parts[1].strip().strip('"')
+                    value = parts[1].strip().strip('"')
+                    print(f"Found value: {value}")  # Debugging output
+                    return value
     except FileNotFoundError:
         print(f"File not found: {file_path}")
     except Exception as e:
