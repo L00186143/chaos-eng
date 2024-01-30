@@ -53,7 +53,7 @@ jobs:
       run: pip install boto3
 
     - name: Run Chaos Experiment Script
-      run: python experiment/chaos_experiment.py
+      run: python experiment/chaos-experiment.py
 
 
 
