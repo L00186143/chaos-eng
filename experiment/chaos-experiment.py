@@ -40,17 +40,16 @@ def toggle_security_group_rule(security_group_id, action, ip_protocol, from_port
             ]
         )
         print(f"Removed rule from Security Group: {security_group_id}")
-
+        
 
 def read_terraform_output(file_path, output_key):
     try:
         with open(file_path, 'r') as file:
             for line in file:
-                # Strip whitespace and split by '='
-                parts = line.strip().split('=')
-                if len(parts) == 2 and parts[0].strip() == output_key:
-                    # Extract value and strip whitespace and quotes
-                    return parts[1].strip().strip('"')
+                if line.strip().startswith(output_key):
+                    parts = line.strip().split('=')
+                    if len(parts) == 2:
+                        return parts[1].strip().strip('"')
     except FileNotFoundError:
         print(f"File not found: {file_path}")
     except Exception as e:
