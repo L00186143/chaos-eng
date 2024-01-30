@@ -46,12 +46,16 @@ def read_terraform_output(file_path, output_key):
     try:
         with open(file_path, 'r') as file:
             for line in file:
-                if line.startswith(output_key):
-                    # Extracting the value after the equals sign and stripping whitespace and quotes
-                    return line.split('=')[1].strip().strip('"')
+                # Strip whitespace and split by '='
+                parts = line.strip().split('=')
+                if len(parts) == 2 and parts[0].strip() == output_key:
+                    # Extract value and strip whitespace and quotes
+                    return parts[1].strip().strip('"')
     except FileNotFoundError:
         print(f"File not found: {file_path}")
-        return None
+    except Exception as e:
+        print(f"Error reading file {file_path}: {e}")
+    return None
     
 
 def main():
