@@ -30,8 +30,8 @@ jobs:
       run: terraform plan
 
     - name: Terraform Apply
-      run: terraform apply -auto-approve
-
+      run: terraform apply -auto-approve | tee output.txt
+      
     - name: Get EC2 Instance IP
       id: get_instance_ip
       run: echo "::set-output name=ip::$(terraform output ec2_instance_private_ip)"

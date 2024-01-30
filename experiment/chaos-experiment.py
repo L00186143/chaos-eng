@@ -41,8 +41,26 @@ def toggle_security_group_rule(security_group_id, action, ip_protocol, from_port
         )
         print(f"Removed rule from Security Group: {security_group_id}")
 
+
+def read_terraform_output(file_path, output_key):
+    try:
+        with open(file_path, 'r') as file:
+            for line in file:
+                if line.startswith(output_key):
+                    return line.split('=')[1].strip().strip('"')
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return None
+    
+
 def main():
-    auto_scaling_group_name = 'web_server_asg'
+    terraform_output_file = 'output.txt'  # Update with your actual output file path
+    auto_scaling_group_name = read_terraform_output(terraform_output_file, "autoscaling_group_name")
+    
+    if auto_scaling_group_name is None:
+        print("Auto Scaling Group name not found.")
+        return
+
     security_group_id = 'sg-0e163fac350a4ca2a'  # Replace with your actual security group ID
     random_action = random.choice(['terminate_instance', 'toggle_rule'])
 

@@ -121,3 +121,8 @@ terraform {
 output "ec2_instance_private_ip" {
   value = aws_instance.web_instance.private_ip
 }
+
+
+output "autoscaling_group_name" {
+  value = aws_autoscaling_group.web_server_asg.name
+}
