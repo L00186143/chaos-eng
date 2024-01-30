@@ -31,7 +31,13 @@ jobs:
 
     - name: Terraform Apply
       run: terraform apply -auto-approve | tee output.txt
-      
+
+    - name: Upload Terraform Output as Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: terraform-output
+        path: output.txt
+
     - name: Get EC2 Instance IP
       id: get_instance_ip
       run: echo "::set-output name=ip::$(terraform output ec2_instance_private_ip)"
@@ -42,6 +48,11 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v2
+
+    - name: Download Terraform Output Artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: terraform-output
 
     - name: Set up Python
       uses: actions/setup-python@v2
