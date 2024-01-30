@@ -47,6 +47,7 @@ def read_terraform_output(file_path, output_key):
         with open(file_path, 'r') as file:
             for line in file:
                 if line.startswith(output_key):
+                    # Extracting the value after the equals sign and stripping whitespace and quotes
                     return line.split('=')[1].strip().strip('"')
     except FileNotFoundError:
         print(f"File not found: {file_path}")
