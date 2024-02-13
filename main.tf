@@ -6,6 +6,12 @@ resource "aws_vpc" "my_vpc" {
   cidr_block = "10.0.0.0/16"
   enable_dns_support = true
   enable_dns_hostnames = true
+
+  # CloudWatch Logs Agent configuration within the VPC
+  tags = {
+    Name = "my-vpc"
+    CloudWatchLogsAgent = "enabled" # Flag indicating VPC is monitored
+  }
 }
 
 resource "aws_security_group" "sec_test" {
@@ -92,6 +98,7 @@ resource "aws_launch_configuration" "web_server_launch_config" {
   name = "my-launch-config"
   image_id = aws_instance.web_instance.ami
   instance_type = "t3.micro"
+  enable_monitoring = true
 }
 
 resource "aws_autoscaling_group" "web_server_asg" {
@@ -108,6 +115,100 @@ resource "aws_autoscaling_group" "web_server_asg" {
 }
 
 
+resource "aws_cloudwatch_metric_alarm" "low_instance_count" {
+  alarm_name                = "low-instance-count"
+  comparison_operator       = "LessThanThreshold"
+  evaluation_periods        = "2"
+  metric_name               = "GroupTotalInstances"
+  namespace                 = "AWS/AutoScaling"
+  period                    = "60"
+  statistic                 = "Average"
+  threshold                 = "1"  # Set based on your minimum instance count
+  alarm_description         = "This metric monitors the total instance count in the ASG"
+  alarm_actions             = ["arn:aws:sns:eu-north-1:123456789012:my-sns-topic"]
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.web_server_asg.name
+  }
+}
+
+
+resource "aws_cloudwatch_log_group" "instance_logs" {
+  name = "/aws/instance/logs"
+  retention_in_days = 14
+}
+
+
+resource "aws_cloudwatch_event_rule" "autoscaling_events" {
+  name        = "autoscaling-events"
+  description = "Capture autoscaling events"
+
+  event_pattern = <<PATTERN
+{
+  "source": [
+    "aws.autoscaling"
+  ],
+  "detail-type": [
+    "EC2 Instance-launch Lifecycle Action",
+    "EC2 Instance-terminate Lifecycle Action"
+  ]
+}
+PATTERN
+}
+
+resource "aws_cloudwatch_event_target" "sns_target" {
+  rule      = aws_cloudwatch_event_rule.autoscaling_events.name
+  arn  = aws_sns_topic.my_sns_topic.arn
+}
+
+resource "aws_sns_topic" "my_sns_topic" {
+  name = "my-sns-topic"
+}
+
+
+resource "aws_sns_topic_subscription" "my_email_subscription" {
+  topic_arn = aws_sns_topic.my_sns_topic.arn
+  protocol  = "email"
+  endpoint  = "stereyno@gmail.com"
+}
+
+
+
+resource "aws_sns_topic_policy" "sns_topic_policy" {
+  arn    = aws_sns_topic.my_sns_topic.arn
+  policy = data.aws_iam_policy_document.sns_topic_policy.json
+}
+
+
+resource "aws_cloudwatch_dashboard" "chaos_dashboard" {
+  dashboard_name = "ChaosDashboard"
+
+  dashboard_body = <<EOF
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/EC2", "CPUUtilization", "InstanceId", "i-0123456789abcdef0"]
+        ],
+        "period": 300,
+        "stat": "Average",
+        "region": "us-west-2",
+        "title": "EC2 Instance CPU Utilization"
+      }
+    }
+  ]
+}
+EOF
+}
+
+
+
+
 terraform {
   backend "s3" {
     bucket = "tfstate-atu"
@@ -118,6 +219,44 @@ terraform {
 }
 
 
+
+data "aws_iam_policy_document" "sns_topic_policy" {
+  statement {
+    actions = [
+      "SNS:Publish",
+      "SNS:RemovePermission",
+      "SNS:SetTopicAttributes",
+      "SNS:DeleteTopic",
+      "SNS:ListSubscriptionsByTopic",
+      "SNS:GetTopicAttributes",
+      "SNS:Receive",
+      "SNS:AddPermission",
+      "SNS:Subscribe"
+    ]
+
+    effect = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+
+    resources = [
+      aws_sns_topic.my_sns_topic.arn
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceOwner"
+      values   = ["${data.aws_caller_identity.current.account_id}"]
+    }
+  }
+}
+
+data "aws_caller_identity" "current" {}
+
+
+
 output "ec2_instance_private_ip" {
   value = aws_instance.web_instance.private_ip
 }
@@ -125,4 +264,9 @@ output "ec2_instance_private_ip" {
 
 output "autoscaling_group_name" {
   value = aws_autoscaling_group.web_server_asg.name
+}
+
+
+output "sns_topic_arn" {
+  value = aws_sns_topic.my_sns_topic.arn
 }
