@@ -182,34 +182,34 @@ resource "aws_sns_topic_policy" "sns_topic_policy" {
 resource "aws_cloudwatch_dashboard" "chaos_dashboard" {
   dashboard_name = "ChaosDashboard"
 
-  dashboard_body = <<EOF
-{
-  "widgets": [
+  dashboard_body = jsonencode({
+  widgets = [
     {
-      "type": "metric",
-      "x": 0,
-      "y": 0,
-      "width": 12,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          ["AWS/EC2", "CPUUtilization", "InstanceId", "aws_instance.web_instance.id"],
-          ["AWS/EC2", "StatusCheckFailed", "InstanceId", "aws_instance.web_instance.id", {
-              "stat": "Maximum",
-              "period": "300",
-              "label": "Instance Status Check Failed"
-            }]
+      type = "metric",
+      x = 0,
+      y = 0,
+      width = 12,
+      height = 6,
+      properties = {
+        metrics = [
+          ["AWS/EC2", "CPUUtilization", "InstanceId", "${aws_instance.web_instance.id}"],
+          ["AWS/EC2", "StatusCheckFailed", "InstanceId", "${aws_instance.web_instance.id}", {
+            stat = "Maximum",
+            period = 300,
+            label = "Instance Status Check Failed"
+          }]
         ],
-        "period": 300,
-        "stat": "Average",
-        "region": "eu-north-1",
-        "title": "EC2 Health and Performance"
+        period = 300,
+        stat = "Average",
+        region = "eu-north-1",
+        title = "EC2 Health and Performance"
       }
     }
   ]
+})
+
 }
-EOF
-}
+
 
 
 
