@@ -193,7 +193,7 @@ resource "aws_cloudwatch_dashboard" "chaos_dashboard" {
       "height": 6,
       "properties": {
         "metrics": [
-          ["AWS/EC2", "CPUUtilization", "InstanceId", "i-0123456789abcdef0"]
+          ["AWS/EC2", "CPUUtilization", "InstanceId", "i-0d39f47da107bda48"]
         ],
         "period": 300,
         "stat": "Average",

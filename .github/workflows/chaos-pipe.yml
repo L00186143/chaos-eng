@@ -72,27 +72,27 @@ jobs:
         AWS_REGION: 'eu-north-1'
       run: python experiment/chaos-experiment.py
 
-    - name: Initialize Metrics File
-      run: echo "" > metrics.prom
+    #- name: Initialize Metrics File
+     # run: echo "" > metrics.prom
 
-    - name: Append Terraform Apply Duration Metric
-      run: echo "terraform_apply_duration_seconds{job=\"terraform_deploy\"} $DURATION" >> metrics.prom
-      env:
-        DURATION: 45.5
+    #- name: Append Terraform Apply Duration Metric
+    #  run: echo "terraform_apply_duration_seconds{job=\"terraform_deploy\"} $DURATION" >> metrics.prom
+    #  env:
+    #    DURATION: 45.5
 
     # Add more steps that append metrics...
 
-    - name: Install system dependencies
-      run: sudo apt-get install -y libsnappy-dev
+    #- name: Install system dependencies
+    #  run: sudo apt-get install -y libsnappy-dev
 
-    - name: Install Python dependencies
-      run: pip install python-snappy requests
+    #- name: Install Python dependencies
+    #  run: pip install python-snappy requests
 
-    - name: Compress and Post Metrics to Grafana Cloud Prometheus
-      run: python compress-and-post-metrics.py metrics.prom ${{ secrets.PROMETHEUS_REMOTE_WRITE_URL }} ${{ secrets.GRAFANA_USERNAME }} ${{ secrets.GRAFANA_PASSWORD }}
-      env:
-        PROMETHEUS_REMOTE_WRITE_URL: ${{ secrets.PROMETHEUS_REMOTE_WRITE_URL }}
-        GRAFANA_USERNAME: ${{ secrets.GRAFANA_USERNAME }}
-        GRAFANA_PASSWORD: ${{ secrets.GRAFANA_PASSWORD }}
+    #- name: Compress and Post Metrics to Grafana Cloud Prometheus
+    #  run: python compress-and-post-metrics.py metrics.prom ${{ secrets.PROMETHEUS_REMOTE_WRITE_URL }} ${{ secrets.GRAFANA_USERNAME }} ${{ secrets.GRAFANA_PASSWORD }}
+     # env:
+     #   PROMETHEUS_REMOTE_WRITE_URL: ${{ secrets.PROMETHEUS_REMOTE_WRITE_URL }}
+    #   GRAFANA_USERNAME: ${{ secrets.GRAFANA_USERNAME }}
+    #    GRAFANA_PASSWORD: ${{ secrets.GRAFANA_PASSWORD }}
 
 
