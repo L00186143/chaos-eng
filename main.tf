@@ -193,12 +193,17 @@ resource "aws_cloudwatch_dashboard" "chaos_dashboard" {
       "height": 6,
       "properties": {
         "metrics": [
-          ["AWS/EC2", "CPUUtilization", "InstanceId", "aws_instance.web_instance.id"]
+          ["AWS/EC2", "CPUUtilization", "InstanceId", "aws_instance.web_instance.id"],
+          ["AWS/EC2", "StatusCheckFailed", "InstanceId", "aws_instance.web_instance.id", {
+              "stat": "Maximum",
+              "period": "300",
+              "label": "Instance Status Check Failed"
+            }]
         ],
         "period": 300,
         "stat": "Average",
         "region": "eu-north-1",
-        "title": "EC2 Instance CPU Utilization"
+        "title": "EC2 Health and Performance"
       }
     }
   ]
