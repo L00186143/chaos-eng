@@ -86,7 +86,7 @@ jobs:
       run: pip install snappy requests
 
     - name: Compress and Post Metrics to Grafana Cloud Prometheus
-      run: python compress_and_post_metrics.py metrics.prom ${{ secrets.PROMETHEUS_REMOTE_WRITE_URL }} ${{ secrets.GRAFANA_USERNAME }} ${{ secrets.GRAFANA_PASSWORD }}
+      run: python compress-and-post-metrics.py metrics.prom ${{ secrets.PROMETHEUS_REMOTE_WRITE_URL }} ${{ secrets.GRAFANA_USERNAME }} ${{ secrets.GRAFANA_PASSWORD }}
       env:
         PROMETHEUS_REMOTE_WRITE_URL: ${{ secrets.PROMETHEUS_REMOTE_WRITE_URL }}
         GRAFANA_USERNAME: ${{ secrets.GRAFANA_USERNAME }}
