@@ -84,6 +84,11 @@ jobs:
 
     - name: Push Metrics to Grafana Cloud Prometheus
       run: |
-        curl -X POST --data-binary @metrics.prom ${{ secrets.GRAFANA_PROMETHEUS_URL }} -H "Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}"
+        curl -X POST --data-binary @metrics.prom ${{ secrets.PROMETHEUS_REMOTE_WRITE_URL }} \
+        -u ${{ secrets.GRAFANA_USERNAME }}:${{ secrets.GRAFANA_PASSWORD }}
+      env:
+        PROMETHEUS_REMOTE_WRITE_URL: ${{ secrets.PROMETHEUS_REMOTE_WRITE_URL }}
+        GRAFANA_USERNAME: ${{ secrets.GRAFANA_USERNAME }}
+        GRAFANA_PASSWORD: ${{ secrets.GRAFANA_PASSWORD }}
 
 
