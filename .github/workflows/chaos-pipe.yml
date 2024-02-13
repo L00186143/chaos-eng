@@ -72,5 +72,18 @@ jobs:
         AWS_REGION: 'eu-north-1'
       run: python experiment/chaos-experiment.py
 
+    - name: Initialize Metrics File
+      run: echo "" > metrics.prom
+
+    - name: Append Terraform Apply Duration Metric
+      run: echo "terraform_apply_duration_seconds{job=\"terraform_deploy\"} $DURATION" >> metrics.prom
+      env:
+        DURATION: 45.5
+
+    # Add more steps that append metrics...
+
+    - name: Push Metrics to Grafana Cloud Prometheus
+      run: |
+        curl -X POST --data-binary @metrics.prom ${{ secrets.GRAFANA_PROMETHEUS_URL }} -H "Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}"
 
 
