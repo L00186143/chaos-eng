@@ -82,10 +82,11 @@ jobs:
 
     # Add more steps that append metrics...
 
-    - name: Push Metrics to Grafana Cloud Prometheus
-      run: |
-        curl -X POST --data-binary @metrics.prom ${{ secrets.PROMETHEUS_REMOTE_WRITE_URL }} \
-        -u ${{ secrets.GRAFANA_USERNAME }}:${{ secrets.GRAFANA_PASSWORD }}
+    - name: Install Snappy and Requests
+      run: pip install python-snappy requests
+
+    - name: Compress and Post Metrics to Grafana Cloud Prometheus
+      run: python compress_and_post_metrics.py metrics.prom ${{ secrets.PROMETHEUS_REMOTE_WRITE_URL }} ${{ secrets.GRAFANA_USERNAME }} ${{ secrets.GRAFANA_PASSWORD }}
       env:
         PROMETHEUS_REMOTE_WRITE_URL: ${{ secrets.PROMETHEUS_REMOTE_WRITE_URL }}
         GRAFANA_USERNAME: ${{ secrets.GRAFANA_USERNAME }}
