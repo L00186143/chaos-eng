@@ -82,8 +82,11 @@ jobs:
 
     # Add more steps that append metrics...
 
-    - name: Install Snappy and Requests
-      run: pip install snappy requests
+    - name: Install system dependencies
+      run: sudo apt-get install -y libsnappy-dev
+
+    - name: Install Python dependencies
+      run: pip install python-snappy requests
 
     - name: Compress and Post Metrics to Grafana Cloud Prometheus
       run: python compress-and-post-metrics.py metrics.prom ${{ secrets.PROMETHEUS_REMOTE_WRITE_URL }} ${{ secrets.GRAFANA_USERNAME }} ${{ secrets.GRAFANA_PASSWORD }}
