@@ -193,11 +193,11 @@ resource "aws_cloudwatch_dashboard" "chaos_dashboard" {
       "height": 6,
       "properties": {
         "metrics": [
-          ["AWS/EC2", "CPUUtilization", "InstanceId", "i-0d39f47da107bda48"]
+          ["AWS/EC2", "CPUUtilization", "InstanceId", "aws_instance.web_instance.id"]
         ],
         "period": 300,
         "stat": "Average",
-        "region": "us-west-2",
+        "region": "eu-north-1",
         "title": "EC2 Instance CPU Utilization"
       }
     }
