@@ -75,7 +75,7 @@ jobs:
       run: python experiment/chaos-experiment.py
 
 
-    - name: Echo HOST Variable
+    - name: Echo HOST Variable Test
       run: echo "HOST is $HOST"
       env:
         HOST: ${{ steps.get_instance_ip.outputs.ip }}
