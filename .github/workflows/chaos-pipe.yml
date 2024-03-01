@@ -75,6 +75,13 @@ jobs:
       run: python experiment/chaos-experiment.py
 
 
+    - name: Echo HOST Variable
+      run: echo "HOST is $HOST"
+      env:
+        HOST: ${{ steps.get_instance_ip.outputs.ip }}
+    
+
+
     - name: Run IDS Chaos Attack Simulation
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
