@@ -41,10 +41,11 @@ jobs:
         name: terraform-output
         path: output.txt
 
-    - name: Get EC2 Instance IP
+    - name: Get EC2 Instance IP and Debug
       run: |
           IP=$(terraform output -raw ec2_instance_private_ip)
-          echo "EC2_INSTANCE_IP=${IP}" >> $GITHUB_ENV
+          echo "Captured IP: ${IP}"
+      
       
 
   chaos-experiment:
