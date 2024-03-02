@@ -86,7 +86,7 @@ jobs:
 
 
     - name: Echo HOST Variable Test
-      run: echo "HOST is $(terraform output -raw ec2_instance_private_ip | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b')"
+      run: echo "HOST is ${{ needs.deploy.outputs.instance_ip }}"
     
 
 
