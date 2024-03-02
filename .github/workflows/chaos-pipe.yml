@@ -49,7 +49,7 @@ jobs:
 
     - name: Save EC2 Instance IP to File
       run: |
-        terraform output -raw ec2_instance_private_ip > ec2_ip.txt
+        terraform output -raw ec2_instance_private_ip | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' > ec2_ip.txt
         more ec2_ip.txt
 
     - name: Upload EC2 IP as Artifact
