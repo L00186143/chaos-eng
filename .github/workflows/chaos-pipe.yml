@@ -44,7 +44,9 @@ jobs:
     - name: Get EC2 Instance IP
       id: get_ip
       run: |
-          echo "IP=$(terraform output -raw ec2_instance_private_ip | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b')" >> $GITHUB_OUTPUT
+          IP=$(terraform output -raw ec2_instance_private_ip | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b')
+          echo "IP=$IP" >> $GITHUB_ENV
+      
       
       
       
