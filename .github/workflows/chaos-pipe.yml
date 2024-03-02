@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      instance_ip: ${{ steps.get_instance_ip.outputs.ip }}
+      instance_ip: ${{ steps.get_ip.outputs.ip }}
     
     steps:
     - name: Checkout Repository
@@ -41,13 +41,11 @@ jobs:
         name: terraform-output
         path: output.txt
 
-    - name: Get EC2 Instance IP
+    - name: Get EC2 Instance IP and Debug
       id: get_ip
       run: |
           IP=$(terraform output -raw ec2_instance_private_ip | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b')
-          echo "IP=$IP" >> $GITHUB_ENV
-      
-      
+          echo "Captured IP: ${IP}"
       
       
       
@@ -97,7 +95,7 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: 'eu-north-1'
-        HOST: ${{ steps.get_instance_ip.outputs.ip }}
+        HOST: ${{ steps.get_ip.outputs.ip }}
         USERNAME: ec2-user
         PASSWORD: 'incorrect-password'
       run: python experiment/simulate-attack.py
