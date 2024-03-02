@@ -44,8 +44,8 @@ jobs:
     - name: Get EC2 Instance IP
       id: get_instance_ip
       run: |
-        echo "EC2_INSTANCE_IP=$(terraform output -raw ec2_instance_private_ip)" >> $GITHUB_ENV
-        echo "instance_ip=${{ env.EC2_INSTANCE_IP }}" >> $GITHUB_ENV
+          IP=$(terraform output -raw ec2_instance_private_ip)
+          echo "IP=$IP" >> $GITHUB_ENV
 
   chaos-experiment:
     runs-on: ubuntu-latest
