@@ -41,10 +41,11 @@ jobs:
         name: terraform-output
         path: output.txt
 
-    - name: Get EC2 Instance IP and Debug
+    - name: Set EC2 Instance IP as Env Var
       run: |
           IP=$(terraform output -raw ec2_instance_private_ip | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b')
-          echo "Captured IP: ${IP}"
+          echo "EC2_INSTANCE_IP=${IP}" >> $GITHUB_ENV
+      
       
       
       
