@@ -50,6 +50,7 @@ jobs:
     - name: Save EC2 Instance IP to File
       run: |
         terraform output -raw ec2_instance_private_ip > ec2_ip.txt
+        more ec2_ip.txt
 
     - name: Upload EC2 IP as Artifact
       uses: actions/upload-artifact@v2
