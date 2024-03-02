@@ -8,6 +8,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    outputs:
+      instance_ip: ${{ steps.get_instance_ip.outputs.ip }}
     
     steps:
     - name: Checkout Repository
@@ -76,9 +79,7 @@ jobs:
 
 
     - name: Echo HOST Variable Test
-      run: echo "HOST is $HOST"
-      env:
-        HOST: ${{ steps.get_instance_ip.outputs.ip }}
+      run: echo "HOST is ${{ needs.deploy.outputs.instance_ip }}"
     
 
 
