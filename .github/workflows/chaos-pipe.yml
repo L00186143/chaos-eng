@@ -107,7 +107,9 @@ jobs:
 
 
     - name: Echo HOST Variable Test
-      run: echo "HOST is $IP"
+      run: |
+        IP=$(cat ec2_ip.txt)
+        echo "HOST is $IP"
     
 
 
@@ -116,7 +118,7 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: 'eu-north-1'
-        HOST: $IP
+        HOST: $(cat ec2_ip.txt)
         USERNAME: ec2-user
         PASSWORD: 'incorrect-password'
       run: python experiment/simulate-attack.py
