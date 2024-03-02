@@ -43,8 +43,9 @@ jobs:
 
     - name: Get EC2 Instance IP and Debug
       run: |
-          IP=$(terraform output -raw ec2_instance_private_ip)
+          IP=$(terraform output -raw ec2_instance_private_ip | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b')
           echo "Captured IP: ${IP}"
+      
       
       
 
