@@ -109,6 +109,7 @@ jobs:
     - name: Echo HOST Variable Test
       run: |
         IP=$(cat ec2_ip.txt)
+        echo "HOST=$IP" >> $GITHUB_ENV
         echo "HOST is $IP"
     
 
