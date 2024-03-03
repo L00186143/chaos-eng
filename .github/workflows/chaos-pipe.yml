@@ -99,7 +99,7 @@ jobs:
           echo "HOST is $IP"
       
   
-    - name: Run IDS Chaos Attack Simulation
+    - name: Run Brute Force SSH Attack Simulation
       env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -107,7 +107,7 @@ jobs:
           USERNAME: ec2-user
           PASSWORD: 'incorrect-password'
       run: python experiment/simulate-attack.py
-      
+
 
     - name: Run Chaos Experiment Script
       env:
