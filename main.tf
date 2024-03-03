@@ -114,9 +114,9 @@ resource "aws_launch_configuration" "web_server_launch_config" {
 }
 
 resource "aws_autoscaling_group" "web_server_asg" {
-  desired_capacity     = 1
+  desired_capacity     = 2
   max_size             = 4
-  min_size             = 1
+  min_size             = 2
 
   launch_configuration = aws_launch_configuration.web_server_launch_config.id
 
