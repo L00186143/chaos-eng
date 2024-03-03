@@ -224,6 +224,62 @@ resource "aws_cloudwatch_dashboard" "chaos_dashboard" {
 
 
 
+resource "aws_cloudwatch_log_group" "vpc_flow_logs_group" {
+  name = "/aws/vpc/flow-logs"
+}
+
+resource "aws_iam_role" "vpc_flow_log_role" {
+  name = "vpc_flow_log_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Principal = {
+          Service = "vpc-flow-logs.amazonaws.com"
+        }
+        Effect = "Allow"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_policy" "vpc_flow_log_policy" {
+  name = "vpc_flow_log_policy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:CreateLogGroup",
+        ]
+        Resource = "*"
+        Effect = "Allow"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "vpc_flow_log_policy_attachment" {
+  role       = aws_iam_role.vpc_flow_log_role.name
+  policy_arn = aws_iam_policy.vpc_flow_log_policy.arn
+}
+
+
+resource "aws_flow_log" "vpc_flow_log" {
+  log_destination      = aws_cloudwatch_log_group.vpc_flow_logs_group.arn
+  iam_role_arn         = aws_iam_role.vpc_flow_log_role.arn
+  vpc_id               = aws_vpc.my_vpc.id
+  traffic_type         = "ALL"
+  log_destination_type = "cloud-watch-logs"
+}
+
+
+
+
 
 
 terraform {
