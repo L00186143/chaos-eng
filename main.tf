@@ -99,6 +99,40 @@ resource "aws_instance" "web_instance" {
   key_name        = "tfchaos"
   vpc_security_group_ids = [aws_security_group.sec_test.id]
   subnet_id       = aws_subnet.my_subnet.id
+
+  user_data = <<-EOF
+              #!/bin/bash
+              # Install CloudWatch Logs agent
+              yum install -y amazon-cloudwatch-agent || apt-get install -y amazon-cloudwatch-agent
+              
+              # CloudWatch agent configuration JSON
+              cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << 'CONFIG'
+              {
+                "agent": {
+                  "metrics_collection_interval": 60,
+                  "run_as_user": "cwagent"
+                },
+                "logs": {
+                  "logs_collected": {
+                    "journald": {
+                      "collectors": [
+                        {
+                          "log_group_name": "/aws/instance/ssh_logs",
+                          "log_stream_name": "{instance_id}-ssh-logs",
+                          "filter_patterns": ["sshd"]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+              CONFIG
+              
+              # Start and enable the CloudWatch agent on system boot
+              systemctl enable amazon-cloudwatch-agent
+              systemctl start amazon-cloudwatch-agent
+              EOF
+
   tags = {
     Name         = "web-instance"
     ChaosMonkey  = "enabled"
