@@ -103,7 +103,7 @@ resource "aws_instance" "web_instance" {
   user_data = <<-EOF
               #!/bin/bash
               # Install CloudWatch Logs agent
-              yum install -y amazon-cloudwatch-agent || apt-get install -y amazon-cloudwatch-agent
+              sudo yum install -y amazon-cloudwatch-agent || apt-get install -y amazon-cloudwatch-agent
               
               # CloudWatch agent configuration JSON
               cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << 'CONFIG'
