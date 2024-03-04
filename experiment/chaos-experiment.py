@@ -66,7 +66,7 @@ def main():
         print("Auto Scaling Group name not found.")
         return
 
-    security_group_id = 'sg-05da09d126bceeb60'
+    security_group_id = 'sg-0182567f6884ec242'
     random_action = random.choice(['terminate_instance', 'toggle_rule'])
 
     if random_action == 'terminate_instance':
