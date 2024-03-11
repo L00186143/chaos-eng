@@ -162,7 +162,7 @@ resource "aws_cloudwatch_dashboard" "ec2_dashboard" {
       "width": 12,
       "height": 3,
       "properties": {
-        "markdown": "## Instance Termination Events\\nMonitor termination events for EC2 instances. Set up alerts or logs for terminated instances to be displayed here."
+        "markdown": "CPU Utilization and Instance Termination Checks"
       }
     }
   ]
