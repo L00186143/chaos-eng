@@ -67,7 +67,9 @@ def main():
         return
 
     security_group_id = 'sg-0da9f52760817eace'
-    random_action = random.choice(['terminate_instance', 'toggle_rule'])
+    #random_action = random.choice(['terminate_instance', 'toggle_rule'])
+    random_action='terminate_instance'
+
 
     if random_action == 'terminate_instance':
         terminate_random_instance(auto_scaling_group_name)
