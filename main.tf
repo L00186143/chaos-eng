@@ -6,12 +6,6 @@ resource "aws_vpc" "my_vpc" {
   cidr_block = "10.0.0.0/16"
   enable_dns_support = true
   enable_dns_hostnames = true
-
-  # CloudWatch Logs Agent configuration within the VPC
-  tags = {
-    Name = "my-vpc"
-    CloudWatchLogsAgent = "enabled" # Flag indicating VPC is monitored
-  }
 }
 
 
@@ -92,53 +86,16 @@ resource "aws_route_table_association" "my_route_table_assoc" {
 }
 
 
-
 resource "aws_instance" "web_instance" {
   ami             = "ami-0d0b75c8c47ed0edf"
   instance_type   = "t3.micro"
   key_name        = "tfchaos"
   vpc_security_group_ids = [aws_security_group.sec_test.id]
   subnet_id       = aws_subnet.my_subnet.id
-
-  user_data = <<-EOF
-              #!/bin/bash
-              # Install CloudWatch Logs agent
-              sudo yum install -y amazon-cloudwatch-agent || apt-get install -y amazon-cloudwatch-agent
-              
-              # CloudWatch agent configuration JSON
-              cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << 'CONFIG'
-              {
-                "agent": {
-                  "metrics_collection_interval": 60,
-                  "run_as_user": "cwagent"
-                },
-                "logs": {
-                  "logs_collected": {
-                    "journald": {
-                      "collectors": [
-                        {
-                          "log_group_name": "/aws/instance/ssh_logs",
-                          "log_stream_name": "{instance_id}-ssh-logs",
-                          "filter_patterns": ["sshd"]
-                        }
-                      ]
-                    }
-                  }
-                }
-              }
-              CONFIG
-              
-              # Start and enable the CloudWatch agent on system boot
-              systemctl enable amazon-cloudwatch-agent
-              systemctl start amazon-cloudwatch-agent
-              EOF
-
   tags = {
     Name         = "web-instance"
-    ChaosMonkey  = "enabled"
   }
 }
-
 
 resource "aws_launch_configuration" "web_server_launch_config" {
   name = "my-launch-config"
@@ -161,161 +118,6 @@ resource "aws_autoscaling_group" "web_server_asg" {
 }
 
 
-resource "aws_cloudwatch_metric_alarm" "low_instance_count" {
-  alarm_name                = "low-instance-count"
-  comparison_operator       = "LessThanThreshold"
-  evaluation_periods        = "2"
-  metric_name               = "GroupTotalInstances"
-  namespace                 = "AWS/AutoScaling"
-  period                    = "60"
-  statistic                 = "Average"
-  threshold                 = "1"  # Set based on your minimum instance count
-  alarm_description         = "This metric monitors the total instance count in the ASG"
-  alarm_actions             = ["arn:aws:sns:eu-north-1:123456789012:my-sns-topic"]
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.web_server_asg.name
-  }
-}
-
-
-resource "aws_cloudwatch_log_group" "instance_logs" {
-  name = "/aws/instance/logs"
-  retention_in_days = 14
-}
-
-
-resource "aws_cloudwatch_event_rule" "autoscaling_events" {
-  name        = "autoscaling-events"
-  description = "Capture autoscaling events"
-
-  event_pattern = <<PATTERN
-{
-  "source": [
-    "aws.autoscaling"
-  ],
-  "detail-type": [
-    "EC2 Instance-launch Lifecycle Action",
-    "EC2 Instance-terminate Lifecycle Action"
-  ]
-}
-PATTERN
-}
-
-resource "aws_cloudwatch_event_target" "sns_target" {
-  rule      = aws_cloudwatch_event_rule.autoscaling_events.name
-  arn  = aws_sns_topic.my_sns_topic.arn
-}
-
-resource "aws_sns_topic" "my_sns_topic" {
-  name = "my-sns-topic"
-}
-
-
-resource "aws_sns_topic_subscription" "my_email_subscription" {
-  topic_arn = aws_sns_topic.my_sns_topic.arn
-  protocol  = "email"
-  endpoint  = "stereyno@gmail.com"
-}
-
-
-
-resource "aws_sns_topic_policy" "sns_topic_policy" {
-  arn    = aws_sns_topic.my_sns_topic.arn
-  policy = data.aws_iam_policy_document.sns_topic_policy.json
-}
-
-
-resource "aws_cloudwatch_dashboard" "chaos_dashboard" {
-  dashboard_name = "ChaosDashboard"
-
-  dashboard_body = jsonencode({
-  widgets = [
-    {
-      type = "metric",
-      x = 0,
-      y = 0,
-      width = 12,
-      height = 6,
-      properties = {
-        metrics = [
-          ["AWS/EC2", "CPUUtilization", "InstanceId", "${aws_instance.web_instance.id}"],
-          ["AWS/EC2", "StatusCheckFailed", "InstanceId", "${aws_instance.web_instance.id}", {
-            stat = "Maximum",
-            period = 300,
-            label = "Instance Status Check Failed"
-          }]
-        ],
-        period = 300,
-        stat = "Average",
-        region = "eu-north-1",
-        title = "EC2 Health and Performance"
-      }
-    }
-  ]
-})
-
-}
-
-
-
-resource "aws_cloudwatch_log_group" "vpc_flow_logs_group" {
-  name = "/aws/vpc/flow-logs"
-}
-
-resource "aws_iam_role" "vpc_flow_log_role" {
-  name = "vpc_flow_log_role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Principal = {
-          Service = "vpc-flow-logs.amazonaws.com"
-        }
-        Effect = "Allow"
-      },
-    ]
-  })
-}
-
-resource "aws_iam_policy" "vpc_flow_log_policy" {
-  name = "vpc_flow_log_policy"
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
-          "logs:CreateLogStream",
-          "logs:PutLogEvents",
-          "logs:CreateLogGroup",
-        ]
-        Resource = "*"
-        Effect = "Allow"
-      },
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "vpc_flow_log_policy_attachment" {
-  role       = aws_iam_role.vpc_flow_log_role.name
-  policy_arn = aws_iam_policy.vpc_flow_log_policy.arn
-}
-
-
-resource "aws_flow_log" "vpc_flow_log" {
-  log_destination      = aws_cloudwatch_log_group.vpc_flow_logs_group.arn
-  iam_role_arn         = aws_iam_role.vpc_flow_log_role.arn
-  vpc_id               = aws_vpc.my_vpc.id
-  traffic_type         = "ALL"
-  log_destination_type = "cloud-watch-logs"
-}
-
-
-
-
-
-
 terraform {
   backend "s3" {
     bucket = "tfstate-atu"
@@ -326,41 +128,107 @@ terraform {
 }
 
 
+#Add Dashboard
+
+resource "aws_cloudwatch_dashboard" "ec2_dashboard" {
+  dashboard_name = "EC2-Overview"
+
+  dashboard_body = <<EOF
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/EC2", "CPUUtilization", "AutoScalingGroupName", "${aws_autoscaling_group.web_server_asg.name}", { "period": 300 }],
+          [".", "StatusCheckFailed", ".", ".", { "stat": "Maximum", "period": 300 }]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "title": "CPU Utilization and Status Checks",
+        "region": "eu-north-1",
+        "stat": "Average",
+        "period": 300
+      }
+    },
+    {
+      "type": "text",
+      "x": 12,
+      "y": 0,
+      "width": 12,
+      "height": 3,
+      "properties": {
+        "markdown": "## Instance Termination Events\\nMonitor termination events for EC2 instances. Set up alerts or logs for terminated instances to be displayed here."
+      }
+    }
+  ]
+}
+EOF
+}
+
+
+
+# Simplify the SNS Topic setup and policy for event notifications
+resource "aws_sns_topic" "my_sns_topic" {
+  name = "my-sns-topic"
+}
+
+resource "aws_sns_topic_subscription" "my_email_subscription" {
+  topic_arn = aws_sns_topic.my_sns_topic.arn
+  protocol  = "email"
+  endpoint  = "stereyno@gmail.com"
+}
 
 data "aws_iam_policy_document" "sns_topic_policy" {
   statement {
-    actions = [
-      "SNS:Publish",
-      "SNS:RemovePermission",
-      "SNS:SetTopicAttributes",
-      "SNS:DeleteTopic",
-      "SNS:ListSubscriptionsByTopic",
-      "SNS:GetTopicAttributes",
-      "SNS:Receive",
-      "SNS:AddPermission",
-      "SNS:Subscribe"
-    ]
-
-    effect = "Allow"
-
+    actions   = ["SNS:Publish"]
+    effect    = "Allow"
     principals {
-      type        = "AWS"
-      identifiers = ["*"]
+      type        = "Service"
+      identifiers = ["events.amazonaws.com"]
     }
-
-    resources = [
-      aws_sns_topic.my_sns_topic.arn
-    ]
-
-    condition {
-      test     = "StringEquals"
-      variable = "AWS:SourceOwner"
-      values   = ["${data.aws_caller_identity.current.account_id}"]
-    }
+    resources  = [aws_sns_topic.my_sns_topic.arn]
   }
 }
 
-data "aws_caller_identity" "current" {}
+resource "aws_sns_topic_policy" "sns_topic_policy" {
+  arn    = aws_sns_topic.my_sns_topic.arn
+  policy = data.aws_iam_policy_document.sns_topic_policy.json
+}
+
+
+# Setup CloudWatch Event Rule for instance termination monitoring
+resource "aws_cloudwatch_event_rule" "instance_termination" {
+  name        = "instance-termination"
+  description = "Capture EC2 instance terminations"
+
+  event_pattern = jsonencode({
+    "source" : ["aws.ec2"],
+    "detail-type" : ["EC2 Instance State-change Notification"],
+    "detail" : {
+      "state" : ["terminated", "shutting-down"]
+    }
+  })
+}
+
+resource "aws_cloudwatch_event_target" "sns_on_termination" {
+  rule      = aws_cloudwatch_event_rule.instance_termination.name
+  target_id = "SendToSNS"
+  arn       = aws_sns_topic.my_sns_topic.arn
+}
+
+
+output "sns_topic_arn" {
+  value = aws_sns_topic.my_sns_topic.arn
+}
+
+output "instance_termination_rule_arn" {
+  value = aws_cloudwatch_event_rule.instance_termination.arn
+}
 
 
 output "ec2_instance_public_ip" {
@@ -376,9 +244,4 @@ output "ec2_instance_private_ip" {
 
 output "autoscaling_group_name" {
   value = aws_autoscaling_group.web_server_asg.name
-}
-
-
-output "sns_topic_arn" {
-  value = aws_sns_topic.my_sns_topic.arn
 }
