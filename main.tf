@@ -92,6 +92,7 @@ resource "aws_instance" "web_instance" {
   key_name        = "tfchaos"
   vpc_security_group_ids = [aws_security_group.sec_test.id]
   subnet_id       = aws_subnet.my_subnet.id
+  iam_instance_profile   = aws_iam_instance_profile.cloudwatch_logs_instance_profile.name
   tags = {
     Name         = "web-instance"
   }
@@ -169,6 +170,66 @@ resource "aws_cloudwatch_dashboard" "ec2_dashboard" {
 }
 EOF
 }
+
+
+#Define IAM Policy for CloudWatch Logs Permissions
+resource "aws_iam_policy" "cloudwatch_logs_policy" {
+  name        = "CloudWatchLogsPolicy"
+  description = "A policy that allows sufficient CloudWatch Logs actions for the CloudWatch Logs agent."
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogStreams"
+        ],
+        Resource = "*"
+      },
+    ]
+  })
+}
+
+
+#Create IAM Role
+
+resource "aws_iam_role" "cloudwatch_logs_role" {
+  name = "CloudWatchLogsRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      },
+    ]
+  })
+}
+
+#Attach CloudWatch Logs policy to CloudWatch Logs Role
+resource "aws_iam_role_policy_attachment" "cloudwatch_logs_policy_attachment" {
+  role       = aws_iam_role.cloudwatch_logs_role.name
+  policy_arn = aws_iam_policy.cloudwatch_logs_policy.arn
+}
+
+
+#Create an Instance Profile
+resource "aws_iam_instance_profile" "cloudwatch_logs_instance_profile" {
+  name = "CloudWatchLogsInstanceProfile"
+  role = aws_iam_role.cloudwatch_logs_role.name
+}
+
+
+
+
 
 
 
